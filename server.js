@@ -197,21 +197,23 @@ app.post("/payment", async (req, res, next) => {
 app.post("/withdraw", async (req, res, next) => {
   try {
     const { email, amount } = req.body;
-    console.log("req.body=", req.body)
     const account = await getUserAccount(email);
-    const prepareTransfer = await transferTypedDataPaymaster(account, amount);
+    // const amountToHex = "0x0f4240"
+    const prepareTransfer = await transferTypedDataPaymaster(account.publicKey, amount);
     console.log("prepareTransfer=", prepareTransfer);
     const merchant_account = new Account(
       provider,
       account.publicKey,
       account.privateKey
     );
-    const signedData = await merchant_account.signMessage(prepareTransfer);
-    const withdraw = await transferExecutePaymaster(
+    /*const signedData = await merchant_account.signMessage(prepareTransfer);
+    console.log("signedData= ", signedData);*/
+    const withdraw = await makeTransfer(merchant_account, chipi_account.address, amount);
+    /*transferExecutePaymaster(
       prepareTransfer,
       signedData,
       merchant_account
-    );
+    );*/
     console.log("withdraw=", withdraw);
     if (withdraw.transaction_hash) {
       await updateMerchanBalance(email, amount);
